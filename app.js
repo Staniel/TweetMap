@@ -68,7 +68,7 @@ app.get('/', function(req, res) {
 });
 routes('', app);
 app.use(errorHandler);
-module.exports = app;
+
 
 var server = app.listen(app.get('port'), app.get('host'), function () {
     console.log('Singleton server running at: %s:%d', app.get('host'), app.get('port'));
@@ -91,5 +91,5 @@ io.sockets.on('connection', function (socket) {
     socket.emit("connected");
 })
     
-
+module.exports = app;
 
