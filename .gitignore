@@ -29,3 +29,5 @@ node_modules
 
 #local storage for development database
 data
+
+.DS_Store
