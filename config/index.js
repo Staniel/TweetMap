@@ -7,7 +7,8 @@ var app = exports;
 var env = process.env.NODE_ENV || 'production';
 
 app.env = env;
-app.port = '3000';
+app.port = process.env.PORT || '3000';
+
 app.host = 'localhost';
 app.maxAge = 3600 * 24 * 7 * 30;
 
