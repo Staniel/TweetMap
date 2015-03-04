@@ -1,0 +1,10 @@
+{
+  "name": "tweets",
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/tweets/:keyword",
+      "function": "list"
+    }
+  ]
+}

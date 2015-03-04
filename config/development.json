@@ -1,0 +1,11 @@
+{
+    "mongodb": {
+        "host": "localhost",
+        "port": 27017,
+        "database": "tweet",
+        "user": "",
+        "password": "",
+        "collections": ["tweet"],
+        "url": "mongodb://localhost:27017/tweet"
+    }
+}
