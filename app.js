@@ -21,6 +21,7 @@ var countdata = 0;
 var geocount = 0;
 var oldtime = new Date().getTime();
 var bunth_data = [];
+var global_stream = null;
 var create_stream = function(io){
   //Connect to twitter stream passing in filter for entire world.
   // var filter = {'locations':'-180,-90,180,90'};
