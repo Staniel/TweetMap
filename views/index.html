@@ -9,31 +9,78 @@
 
  <!-- Latest compiled and minified CSS -->
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
-
-<!-- Optional theme -->
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
-
+	<link rel="stylesheet" href="stylesheets/main.css">
   </head>
 
-<body>
-<div class="container">
+  <body style="height:100%">
+  <div id="header-content" class="container-fluid">
+	  <div class="row">
+		  <div class="title col-md-6">
+			  <h2>Twitter Map Application</h2>
+		  </div>
+		  <div id="author-info" class="col-md-6">
+			  <span>Designed by Terrence</span>
+		  </div>
+	  </div>
+  </div>
+  <div class="container-fluid content">
+	  <div class="row" style="height:100%">
+		  <div class="sidebar col-md-3" style="height:100%">
+			  <div class="viewport scrollable">
+				  <div class="overview" style="top:0px;">
+					  <div class="block center first" id="all-block">
+						  <h4>Tweets Since Start Streaming</h4>
+						  <div class="counter-since">
+							  <span class="digit">-</span>
+							  <span class="digit">-</span>
+							  <span class="digit">-</span>
+							  <span class="digit">-</span>
+							  <span class="digit">-</span>
+							  <span class="digit">-</span>
+							  <span class="digit">-</span>
+						  </div>
+					  </div>
 
-<div class="row">
-	<div class="col-md-8">
-		<h5 >Assignment1 of W6998 Cloud Computing and Big Data</h5>
-	</div>
+					  <div class="block center first" id="since-block">
+						  <h4>Total Number of Tweets</h4>
+						  <div class="counter-since">
+							  <span class="digit1">-</span>
+							  <span class="digit1">-</span>
+							  <span class="digit1">-</span>
+							  <span class="digit1">-</span>
+							  <span class="digit1">-</span>
+							  <span class="digit1">-</span>
+							  <span class="digit1">-</span>
+						  </div>
+					  </div>
 
-	<div class="col-md-4">
-		<select id="keyword" class="form-control" onchange="getval(this);">
-		    <option value="good">good</option>
-		    <option value="java">java</option>
-		    <option value="song">song</option>
-		    <option value="phone">phone</option>
-		</select>
-	</div>
-</div>
-<div id="map-canvas" class="col-md-12" style="height:500px"></div>
-  
 
-</body>
+					  <div class="block center" id="keyword-section">
+						  <h4>Choose Keyword</h4>
+						  <div id="keyword-select">
+							  <form id="keyword-form">
+								  <div class="btn-group" role="group" aria-label="...">
+									  <button type="button" class="btn btn-default">good</button>
+									  <button type="button" class="btn btn-default">song</button>
+									  <button type="button" class="btn btn-default">phone</button>
+									  <button type="button" class="btn btn-default">java</button>
+								  </div>
+							  </form>
+						  </div>
+					  </div>
+					  <div class="block center" id="start-section">
+						  <button type="button" class="btn btn-danger btn-lg" id="start-stream-button" onclick = "startStreaming()">Start Streaming!</button>
+					  </div>
+					  <div class="block center" id="close-section">
+						  <button type="button" class="btn btn-success btn-lg" id="close-stream-button" onclick = "endStreaming()">End Streaming!</button>
+					  </div>
+				  </div>
+			  </div>
+		  </div>
+		  <div class="map-container col-md-9 col-offset-3" id="map-canvas" style="height:100%">
+
+		  </div>
+	  </div>
+  </div>
+  </body>
 </html>

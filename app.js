@@ -1,7 +1,7 @@
 'use strict'
 var express = require('express');
 var path = require('path');
-var favicon = require('serve-favicon');
+//var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
@@ -9,6 +9,8 @@ var twitter = require('twitter');
 var app = express();
 var socket = require('socket.io');
 var Tweets = require('./models/db').Tweets;
+var AWS = require('aws-sdk');
+var workerUtils = require('node-worker-pool/nodeWorkerUtils');
 require('events').EventEmitter.prototype._maxListeners = 10000;
 //Setup twitter stream api
 var twit = new twitter({
@@ -41,9 +43,9 @@ var create_stream = function(io){
                   if (data.text.indexOf(keyword_list[x]) > -1)
                     {key = keyword_list[x]; break;}
                 }
-              var obj = {'id': data.id, 'time': new Date(data.created_at), 'text': data.text, 'lat': data.coordinates.coordinates[0], 'lng': data.coordinates.coordinates[1], 'keyword': key};
+              var obj = {'id': data.id, 'time': new Date(data.created_at), 'text': data.text, 'lat': data.coordinates.coordinates[1], 'lng': data.coordinates.coordinates[0], 'keyword': key};
               var record = new Tweets(obj);
-              console.log(obj);
+              //console.log(obj);
               record.save();
               io.emit('ts', record);
           }
