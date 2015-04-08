@@ -10,7 +10,16 @@ var app = express();
 var socket = require('socket.io');
 var Tweets = require('./models/db').Tweets;
 var AWS = require('aws-sdk');
-var workerUtils = require('node-worker-pool/nodeWorkerUtils');
+var util = require('util');
+var http = require('http');
+var workerpool = require('workerpool');
+var awsInfo = require('./config/awsInfo');
+var snsClient = require('aws-snsclient');
+AWS.config.update({
+    'region': awsInfo.region,
+    'accessKeyId': awsInfo.accessKey,
+    'secretAccessKey': awsInfo.secretKey
+});
 require('events').EventEmitter.prototype._maxListeners = 10000;
 //Setup twitter stream api
 var twit = new twitter({
@@ -24,6 +33,26 @@ var geocount = 0;
 var oldtime = new Date().getTime();
 var bunth_data = [];
 var global_stream = null;
+var sqsParams = {
+    QueueUrl: awsInfo.queueUrl,
+    Attributes: {
+        'Policy': JSON.stringify({})
+    }
+};
+var sqs = new AWS.SQS();
+sqs.setQueueAttributes(sqsParams, function(err, result) {
+    if (err !== null) {
+        console.log(util.inspect(err));
+        return;
+    }
+    console.log(util.inspect(result));
+});
+console.log("sqs created!");
+var sqsSendParams = {
+    MessageBody: "",
+    QueueUrl: awsInfo.queueUrl
+};
+
 var create_stream = function(io){
   //Connect to twitter stream passing in filter for entire world.
   // var filter = {'locations':'-180,-90,180,90'};
@@ -43,17 +72,24 @@ var create_stream = function(io){
                   if (data.text.indexOf(keyword_list[x]) > -1)
                     {key = keyword_list[x]; break;}
                 }
-              var obj = {'id': data.id, 'time': new Date(data.created_at), 'text': data.text, 'lat': data.coordinates.coordinates[1], 'lng': data.coordinates.coordinates[0], 'keyword': key};
-              var record = new Tweets(obj);
-              //console.log(obj);
-              record.save();
-              io.emit('ts', record);
+              if(key!='') {
+                  var obj = {'id': data.id, 'time': new Date(data.created_at), 'text': data.text, 'lat': data.coordinates.coordinates[1], 'lng': data.coordinates.coordinates[0], 'keyword': key};
+                  var record = new Tweets(obj);
+                  console.log("new tweet coming");
+                  record.save();
+                  io.emit('ts', record);
+                  sqsSendParams.MessageBody = JSON.stringify(obj);
+                  sqs.sendMessage(sqsSendParams, function(err, data){
+                      console.log("send");
+                      if(err) console.log(err);
+                      else console.log("successfully sended tweet to sqs");
+                  });
+              }
           }
         });
     });
 }
 
-var config = require('./config');
 var routes = require('./middlewares').routes;
 var errorHandler = require('./middlewares').errorHandler;
 
@@ -92,6 +128,48 @@ io.sockets.on('connection', function (socket) {
     });
     socket.emit("connected");
 })
-    
+
+
+//use worker pool and Alchemy to conduct sentiment analysis for tweet fetched from sqs.
+var workerPool = workerpool.pool(__dirname+'/helpers/worker.js', {maxWorkers: 5});
+var sqsGetParams = {
+    QueueUrl: awsInfo.queueUrl,
+    MaxNumberOfMessages: 1,
+    VisibilityTimeout: 60,
+    WaitTimeSeconds: 10
+};
+
+sqs.receiveMessage(sqsGetParams, function(err, data){
+    if(data.Messages){
+        console.log("get one tweet from sqs");
+        var message = data.Messages[0],
+            body = JSON.parse(message.Body);
+        workerPool.exec('sentimentAnalysis',[body.text]);
+        removeFromQueue(message);
+
+    }
+});
+
+var removeFromQueue = function(message) {
+    sqs.deleteMessage({
+        QueueUrl: awsInfo.queueUrl,
+        ReceiptHandle: message.ReceiptHandle
+    }, function(err, data) {
+        // If we errored, tell us that we did
+        err && console.log(err);
+    });
+};
+
+var sns = new AWS.SNS();
+var snsParams = {
+    Protocol: 'http',
+    TopicArn: awsInfo.topicARN,
+    Endpoint: 'http://localhost:9000/receive'
+};
+sns.subscribe(snsParams, function(err,data){
+    console.log(err);
+})
+
+
 module.exports = app;
 

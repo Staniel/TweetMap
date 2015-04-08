@@ -1,6 +1,6 @@
 {
     "mongodb": {
-        "host": "54.165.23.167",
+        "host": "52.1.162.49",
         "port": 27017,
         "database": "tweet",
         "user": "",
