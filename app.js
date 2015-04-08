@@ -14,7 +14,6 @@ var util = require('util');
 var http = require('http');
 var workerpool = require('workerpool');
 var awsInfo = require('./config/awsInfo');
-var snsClient = require('aws-snsclient');
 AWS.config.update({
     'region': awsInfo.region,
     'accessKeyId': awsInfo.accessKey,
@@ -164,11 +163,12 @@ var sns = new AWS.SNS();
 var snsParams = {
     Protocol: 'http',
     TopicArn: awsInfo.topicARN,
-    Endpoint: 'http://localhost:9000/receive'
+    Endpoint: 'http://52.4.245.135:9000/receive'
 };
+
 sns.subscribe(snsParams, function(err,data){
-    console.log(err);
-})
+    console.log(data);
+});
 
 
 module.exports = app;
