@@ -14,6 +14,8 @@ var util = require('util');
 var http = require('http');
 var workerpool = require('workerpool');
 var awsInfo = require('./config/awsInfo');
+var events = require('events');
+
 AWS.config.update({
     'region': awsInfo.region,
     'accessKeyId': awsInfo.accessKey,
@@ -138,16 +140,25 @@ var sqsGetParams = {
     WaitTimeSeconds: 10
 };
 
-sqs.receiveMessage(sqsGetParams, function(err, data){
-    if(data.Messages){
-        console.log("get one tweet from sqs");
-        var message = data.Messages[0],
-            body = JSON.parse(message.Body);
-        workerPool.exec('sentimentAnalysis',[body.text]);
-        removeFromQueue(message);
 
-    }
-});
+//create an event emitter to get message from SQS if it's not empty
+
+var SQSListenEmitter = new events.EventEmitter();
+var getMessageFromSQS = function(){
+    sqs.receiveMessage(sqsGetParams, function(err, data){
+        if(data.Messages){
+            console.log("get one tweet from sqs");
+            var message = data.Messages[0],
+                body = JSON.parse(message.Body);
+            workerPool.exec('sentimentAnalysis',[body.text]);
+            removeFromQueue(message);
+
+        }
+    });
+};
+SQSListenEmitter.on('NotEmpty', getMessageFromSQS);
+setInterval(function(){SQSListenEmitter.emit('NotEmpty');},500);
+
 
 var removeFromQueue = function(message) {
     sqs.deleteMessage({
@@ -159,6 +170,11 @@ var removeFromQueue = function(message) {
     });
 };
 
+
+
+
+
+//create aws sns and make the client endpoint subscribe the topic
 var sns = new AWS.SNS();
 var snsParams = {
     Protocol: 'http',
@@ -169,6 +185,8 @@ var snsParams = {
 sns.subscribe(snsParams, function(err,data){
     console.log(data);
 });
+
+
 
 
 module.exports = app;
