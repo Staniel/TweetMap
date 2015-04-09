@@ -26,7 +26,7 @@ function sentimentAnalysis (text) {
         alchemyApiKey: "ac8f1dc35b4ca767ece93398da0ad339766c4ab2",
         outputMode: "json"
     };
-    var result = null;
+    var result = {};
     //console.log(text);
     request({
         url: requestUrl,
@@ -44,11 +44,13 @@ function sentimentAnalysis (text) {
             var tmp = JSON.parse(body).docSentiment;
             if(tmp!=undefined){
                 if(tmp.type!=undefined){
-                    result = tmp.type;
-                    publishParams.Message = result;
+                    result.type = tmp.type;
+                    if(result.type=='neutral'){
+                        result.score = "0";
+                    }
+                    else result.score = tmp.score;
+                    publishParams.Message = JSON.stringify(result);
                     sns.publish(publishParams, function(err, data){
-                        if (err) console.log(err, err.stack);
-                        else console.log(data);
                     })
                 }
             }

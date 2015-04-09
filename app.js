@@ -76,14 +76,11 @@ var create_stream = function(io){
               if(key!='') {
                   var obj = {'id': data.id, 'time': new Date(data.created_at), 'text': data.text, 'lat': data.coordinates.coordinates[1], 'lng': data.coordinates.coordinates[0], 'keyword': key};
                   var record = new Tweets(obj);
-                  console.log("new tweet coming");
                   record.save();
                   io.emit('ts', record);
                   sqsSendParams.MessageBody = JSON.stringify(obj);
                   sqs.sendMessage(sqsSendParams, function(err, data){
-                      console.log("send");
                       if(err) console.log(err);
-                      else console.log("successfully sended tweet to sqs");
                   });
               }
           }
@@ -145,19 +142,32 @@ var sqsGetParams = {
 
 var SQSListenEmitter = new events.EventEmitter();
 var getMessageFromSQS = function(){
-    sqs.receiveMessage(sqsGetParams, function(err, data){
-        if(data.Messages){
-            console.log("get one tweet from sqs");
-            var message = data.Messages[0],
-                body = JSON.parse(message.Body);
-            workerPool.exec('sentimentAnalysis',[body.text]);
-            removeFromQueue(message);
+    var sqsGetAttributesParams = {
+        QueueUrl: awsInfo.queueUrl,
+        AttributeNames: [
+            'ApproximateNumberOfMessages'
+        ]
+    };
 
+    sqs.getQueueAttributes(sqsGetAttributesParams, function(err,data){
+        if(data.Attributes.ApproximateNumberOfMessages>5){
+            sqs.receiveMessage(sqsGetParams, function(err, data){
+
+                if(data.Messages){
+                    console.log("get one tweet from sqs");
+                    var message = data.Messages[0],
+                        body = JSON.parse(message.Body);
+                    workerPool.exec('sentimentAnalysis',[body.text]);
+                    removeFromQueue(message);
+
+                }
+            });
         }
     });
 };
+
 SQSListenEmitter.on('NotEmpty', getMessageFromSQS);
-setInterval(function(){SQSListenEmitter.emit('NotEmpty');},500);
+setInterval(function(){SQSListenEmitter.emit('NotEmpty');},1000);
 
 
 var removeFromQueue = function(message) {
