@@ -21,6 +21,7 @@ AWS.config.update({
     'accessKeyId': awsInfo.accessKey,
     'secretAccessKey': awsInfo.secretKey
 });
+
 require('events').EventEmitter.prototype._maxListeners = 10000;
 //Setup twitter stream api
 var twit = new twitter({
@@ -31,8 +32,6 @@ var twit = new twitter({
 });
 var countdata = 0;
 var geocount = 0;
-var oldtime = new Date().getTime();
-var bunth_data = [];
 var global_stream = null;
 var sqsParams = {
     QueueUrl: awsInfo.queueUrl,
@@ -46,21 +45,21 @@ sqs.setQueueAttributes(sqsParams, function(err, result) {
         console.log(util.inspect(err));
         return;
     }
-    console.log(util.inspect(result));
+    //console.log(util.inspect(result));
 });
-console.log("sqs created!");
 var sqsSendParams = {
     MessageBody: "",
     QueueUrl: awsInfo.queueUrl
 };
 
-var create_stream = function(io){
+
+
+var create_stream = function(){
   //Connect to twitter stream passing in filter for entire world.
   // var filter = {'locations':'-180,-90,180,90'};
-  var keyword_string = 'good,java,song,phone';
+  var keyword_string = 'good,sad,song,phone';
   var keyword_list = keyword_string.split(',');
-  console.log(keyword_list);
-  var filter = {'track':'good,java,song,phone'};
+  var filter = {'track':'good,sad,song,phone'};
     twit.stream('statuses/filter', filter, function(stream) {
         global_stream = stream;
         global_stream.on('data', function(data) {
@@ -74,10 +73,10 @@ var create_stream = function(io){
                     {key = keyword_list[x]; break;}
                 }
               if(key!='') {
-                  var obj = {'id': data.id, 'time': new Date(data.created_at), 'text': data.text, 'lat': data.coordinates.coordinates[1], 'lng': data.coordinates.coordinates[0], 'keyword': key};
-                  var record = new Tweets(obj);
-                  record.save();
-                  io.emit('ts', record);
+                  var obj = {'id': data.id, 'time': new Date(data.created_at), 'text': data.text, 'lat': data.coordinates.coordinates[1], 'lng': data.coordinates.coordinates[0], 'keyword': key, 'sentiment': "", 'sentiScore': 0};
+                  //var record = new Tweets(obj);
+                  //record.save();
+                  //io.emit('ts', record);
                   sqsSendParams.MessageBody = JSON.stringify(obj);
                   sqs.sendMessage(sqsSendParams, function(err, data){
                       if(err) console.log(err);
@@ -108,24 +107,25 @@ app.use(errorHandler);
 
 var server = app.listen(app.get('port'), app.get('host'), function () {
     console.log('Singleton server running at: %s:%d', app.get('host'), app.get('port'));
-  });
+});
 //io need to be established after the app run
 
-var io = socket.listen(server);
+//var io = socket.listen(server);
 // io.sockets.setMaxListeners(0);
-var count = 0;
+//var count = 0;
 //socket io is not related with connection anymore
-create_stream(io);
+
+create_stream();
 //Create web sockets connection.
-io.sockets.on('connection', function (socket) {
-    console.log("connection established");
-    count++;
-    socket.on("disconnect", function(){
-      console.log("disconnect");
-      count--;
-    });
-    socket.emit("connected");
-})
+//io.sockets.on('connection', function (socket) {
+//    console.log("connection established");
+//    count++;
+//    socket.on("disconnect", function(){
+//      console.log("disconnect");
+//      count--;
+//    });
+//    socket.emit("connected");
+//})
 
 
 //use worker pool and Alchemy to conduct sentiment analysis for tweet fetched from sqs.
@@ -154,10 +154,9 @@ var getMessageFromSQS = function(){
             sqs.receiveMessage(sqsGetParams, function(err, data){
 
                 if(data.Messages){
-                    console.log("get one tweet from sqs");
                     var message = data.Messages[0],
                         body = JSON.parse(message.Body);
-                    workerPool.exec('sentimentAnalysis',[body.text]);
+                    workerPool.exec('sentimentAnalysis',[JSON.stringify(body)]);
                     removeFromQueue(message);
 
                 }
@@ -189,7 +188,7 @@ var sns = new AWS.SNS();
 var snsParams = {
     Protocol: 'http',
     TopicArn: awsInfo.topicARN,
-    Endpoint: 'http://52.4.245.135:9000/receive'
+    Endpoint: 'http://52.4.26.85:9000/receive'
 };
 
 sns.subscribe(snsParams, function(err,data){

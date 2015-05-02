@@ -1,7 +1,7 @@
 {
-  "accessKey": "AKIAIDBXTK6XEOHPKUPQ",
-  "secretKey": "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",
+  "accessKey": "AKIAJNPOKHHVPR5DLJ2Q",
+  "secretKey": "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",
   "region": "us-east-1",
-  "queueUrl": "https://sqs.us-east-1.amazonaws.com/624587614659/tweets-queue-6998E",
+  "queueUrl": "https://sqs.us-east-1.amazonaws.com/624587614659/tweets-queue-COMS6998E",
   "topicARN": "arn:aws:sns:us-east-1:624587614659:TweetSentiment"
 }

@@ -20,14 +20,15 @@ var publishParams = {
     }
 };
 
-function sentimentAnalysis (text) {
+function sentimentAnalysis (message) {
+    console.log(message);
     var requestUrl = "http://access.alchemyapi.com/calls/text/TextGetTextSentiment";
     var requestOptions = {
         alchemyApiKey: "ac8f1dc35b4ca767ece93398da0ad339766c4ab2",
         outputMode: "json"
     };
-    var result = {};
-    //console.log(text);
+    var obj = JSON.parse(message);
+    var text = obj.text;
     request({
         url: requestUrl,
         method: "GET",
@@ -44,12 +45,13 @@ function sentimentAnalysis (text) {
             var tmp = JSON.parse(body).docSentiment;
             if(tmp!=undefined){
                 if(tmp.type!=undefined){
-                    result.type = tmp.type;
-                    if(result.type=='neutral'){
-                        result.score = "0";
+                    obj.sentiment = tmp.type;
+                    if(obj.sentiment=='neutral'){
+                        obj.sentiScore = "0";
                     }
-                    else result.score = tmp.score;
-                    publishParams.Message = JSON.stringify(result);
+                    else obj.sentiScore = tmp.score;
+                    publishParams.Message = JSON.stringify(obj);
+                    console.log("push 1");
                     sns.publish(publishParams, function(err, data){
                     })
                 }

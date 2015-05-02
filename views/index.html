@@ -5,6 +5,10 @@
     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=true_or_false"></script>
  	<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+
+	<script type="text/javascript" src="javascripts/heatmap.js"></script>
+	<script type="text/javascript" src="javascripts/gmaps-heatmap.js"></script>
+	<script type="text/javascript" src="javascripts/d3.js"></script>
 	<script type="text/javascript" src="javascripts/util.js"></script>  <!--current directory is public folder-->
 
  <!-- Latest compiled and minified CSS -->
@@ -19,16 +23,43 @@
 			  <h2>Twitter Map Application</h2>
 		  </div>
 		  <div id="author-info" class="col-md-6">
-			  <span>Designed by Terrence</span>
+			  <span>Designed by Terrence and Staniel</span>
 		  </div>
 	  </div>
   </div>
   <div class="container-fluid content">
-	  <div class="row" style="height:100%">
+	  <div class="row" style="height:50% ">
 		  <div class="sidebar col-md-3" style="height:100%">
 			  <div class="viewport scrollable">
 				  <div class="overview" style="top:0px;">
-					  <div class="block center first" id="all-block">
+
+					  <div class="block center first" id="since-block-positive">
+						  <h4>Positive Tweets Since Start Streaming</h4>
+						  <div class="counter-since">
+							  <span class="digit2">-</span>
+							  <span class="digit2">-</span>
+							  <span class="digit2">-</span>
+							  <span class="digit2">-</span>
+							  <span class="digit2">-</span>
+							  <span class="digit2">-</span>
+							  <span class="digit2">-</span>
+						  </div>
+					  </div>
+
+					  <div class="block center first" id="since-block-negative">
+						  <h4>Negative Tweets Since Start Streaming</h4>
+						  <div class="counter-since">
+							  <span class="digit3">-</span>
+							  <span class="digit3">-</span>
+							  <span class="digit3">-</span>
+							  <span class="digit3">-</span>
+							  <span class="digit3">-</span>
+							  <span class="digit3">-</span>
+							  <span class="digit3">-</span>
+						  </div>
+					  </div>
+
+					  <div class="block center first" id="since-block">
 						  <h4>Tweets Since Start Streaming</h4>
 						  <div class="counter-since">
 							  <span class="digit">-</span>
@@ -41,7 +72,9 @@
 						  </div>
 					  </div>
 
-					  <div class="block center first" id="since-block">
+
+
+					  <div class="block center first" id="all-block">
 						  <h4>Total Number of Tweets</h4>
 						  <div class="counter-since">
 							  <span class="digit1">-</span>
@@ -63,7 +96,7 @@
 									  <button type="button" class="btn btn-default">good</button>
 									  <button type="button" class="btn btn-default">song</button>
 									  <button type="button" class="btn btn-default">phone</button>
-									  <button type="button" class="btn btn-default">java</button>
+									  <button type="button" class="btn btn-default">sad</button>
 								  </div>
 							  </form>
 						  </div>
@@ -78,6 +111,18 @@
 			  </div>
 		  </div>
 		  <div class="map-container col-md-9 col-offset-3" id="map-canvas" style="height:100%">
+
+		  </div>
+
+	  </div>
+	  <div class="row" style="background-color: #f5f5f5; height:5%">
+		  <div class="text-center" style="font-size: large; line-height:85px; height:100%; vertical-align: middle">
+			  Tweet Sentiment Trend Bar Chart
+		  </div>
+
+	  </div>
+	  <div class="row">
+		  <div class="col-md-12" id="live-chart" style="background-color: #f5f5f5; height:47%; padding-left: 50px">
 
 		  </div>
 	  </div>

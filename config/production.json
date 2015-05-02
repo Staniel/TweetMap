@@ -1,11 +1,11 @@
 {
     "mongodb": {
-        "host": "52.1.162.49",
+        "host": "52.0.226.14",
         "port": 27017,
         "database": "tweet",
         "user": "",
         "password": "",
         "collections": ["tweet"],
-        "url": "mongodb://54.165.23.167:27017/tweet"
+        "url": "mongodb://52.0.226.14:27017/tweet"
     }
 }
